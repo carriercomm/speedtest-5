@@ -28,6 +28,7 @@ var verbose = flag.Bool("v", false, "Be verbose.")
 var conns = flag.Int("conns", 1, "Nr of connections.")
 var arts = flag.Int64("arts", 100, "Nr of articles.")
 var group = flag.String("group", "alt.binaries.boneless", "Newsgroup to use.")
+var ssl = flag.Bool("ssl", false, "Use SSL connection.")
 
 var wg sync.WaitGroup
 
@@ -37,7 +38,11 @@ type Connection struct {
 }
 
 func (c *Connection) Connect(q chan string) (err error) {
-	c.nntp, err = nntp.Dial("tcp", *server)
+	if *ssl == true {
+		c.nntp, err = nntp.DialTLS("tcp", *server)
+	} else {
+		c.nntp, err = nntp.Dial("tcp", *server)
+	}
 	if err != nil {
 		panic(err)
 	}
@@ -97,10 +102,16 @@ var totsize = 0
 
 func main() {
 	flag.Parse()
-	fmt.Printf("Retrieving data for %s..\n", *server)
 	runtime.GOMAXPROCS(8)
 
-	n, err := nntp.Dial("tcp", *server)
+	fmt.Printf("Retrieving data for %s..\n", *server)
+	var n *nntp.Conn
+	var err error
+	if *ssl == true {
+		n, err = nntp.DialTLS("tcp", *server)
+	} else {
+		n, err = nntp.Dial("tcp", *server)
+	}
 	if err != nil {
 		panic(err)
 	}
