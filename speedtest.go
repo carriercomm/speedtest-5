@@ -12,7 +12,7 @@
 package main
 
 import (
-	"code.google.com/p/chiparus-nntp-go/nntp"
+	"github.com/tomarus/chiparus-nntp-go/nntp"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -53,7 +53,10 @@ func (c *Connection) Connect(q chan string) (err error) {
 	}
 
 	if *user != "" && *pass != "" {
-		c.nntp.Authenticate(*user, *pass)
+		err := c.nntp.Authenticate(*user, *pass)
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	err = c.nntp.ModeReader()
